@@ -1,0 +1,216 @@
+.workspace-panel .el-table {
+  --el-table-header-bg-color: rgba(248, 250, 252, 0.88);
+  --el-table-border-color: rgba(35, 54, 86, 0.07);
+  --el-table-row-hover-bg-color: rgba(47, 111, 237, 0.045);
+  border-radius: 12px;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+.workspace-panel .el-table th.el-table__cell {
+  height: 34px;
+  color: #667085;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.workspace-panel .el-table .el-table__cell {
+  padding: 8px 0;
+}
+
+.workspace-panel .el-table__row {
+  transition:
+    background-color 180ms var(--ease),
+    box-shadow 220ms var(--ease);
+}
+
+.workspace-panel .el-table__row:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.workspace-panel .el-table__body-wrapper {
+  scrollbar-color: rgba(47, 111, 237, 0.28) transparent;
+  scrollbar-width: thin;
+}
+
+.workspace-panel .el-table__body-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.workspace-panel .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(47, 111, 237, 0.22);
+  border-radius: 999px;
+}
+
+.domain-table col:nth-child(1) {
+  width: 4%;
+}
+
+.domain-table col:nth-child(2) {
+  width: 20%;
+}
+
+.domain-table col:nth-child(3) {
+  width: 8%;
+}
+
+.domain-table col:nth-child(4) {
+  width: 10%;
+}
+
+.domain-table col:nth-child(5) {
+  width: 9%;
+}
+
+.domain-table col:nth-child(6) {
+  width: 10%;
+}
+
+.domain-table col:nth-child(7) {
+  width: 10%;
+}
+
+.domain-table col:nth-child(8) {
+  width: 22%;
+}
+
+.domain-table col:nth-child(9) {
+  width: 12%;
+}
+
+.batch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(47, 111, 237, 0.16);
+  border-radius: 10px;
+  background: rgba(47, 111, 237, 0.04);
+  color: #344054;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.domain-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.domain-dot {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 9px;
+  background:
+    linear-gradient(135deg, rgba(47, 111, 237, 0.16), rgba(47, 111, 237, 0.04)),
+    #f8fbff;
+  border: 1px solid rgba(47, 111, 237, 0.14);
+  position: relative;
+}
+
+.domain-dot::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  inset: 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.12);
+}
+
+.domain-cell strong,
+.domain-cell span:not(.domain-dot) {
+  display: block;
+}
+
+.domain-cell span:not(.domain-dot) {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.ns-list {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.ns-tag {
+  max-width: min(100%, 210px);
+  border-color: rgba(47, 111, 237, 0.22);
+  background: rgba(47, 111, 237, 0.045);
+  color: #2563eb;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.ns-count {
+  min-width: 32px;
+  justify-content: center;
+  color: #475467;
+  border-color: rgba(71, 84, 103, 0.18);
+  background: rgba(71, 84, 103, 0.045);
+}
+
+.status-pill,
+.slot-pill {
+  min-width: 44px;
+  justify-content: center;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+.action-button {
+  min-width: 36px;
+  height: 28px;
+  padding: 0 9px;
+  border-color: rgba(35, 54, 86, 0.12);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.action-button.danger {
+  width: 28px;
+  min-width: 28px;
+  padding: 0;
+  color: #e5484d;
+  border-color: rgba(229, 72, 77, 0.18);
+  background: rgba(229, 72, 77, 0.045);
+}
+
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .batch-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .table-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

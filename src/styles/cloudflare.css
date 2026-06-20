@@ -1,0 +1,60 @@
+.cf-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cf-page > * {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.cf-account-panel {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cf-account-panel .el-table {
+  border: 1px solid rgba(35, 54, 86, 0.08);
+  width: 100%;
+  table-layout: fixed;
+  margin-bottom: 12px;
+}
+
+.cf-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 12px;
+}
+
+.cf-form .el-form-item:first-child {
+  grid-column: 1 / -1;
+}
+
+.cf-add-button {
+  align-self: end;
+  margin-bottom: 18px;
+  width: 100%;
+}
+
+.cf-ns-text {
+  color: #2563eb;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+@media (max-width: 980px) {
+  .cf-form {
+    grid-template-columns: 1fr;
+  }
+
+  .cf-add-button {
+    margin-bottom: 0;
+  }
+}

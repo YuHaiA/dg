@@ -1,0 +1,95 @@
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 24px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(47, 111, 237, 0.18), transparent 30%),
+    linear-gradient(135deg, #f8fbff 0%, #edf3f9 54%, #e8eef6 100%);
+}
+
+.login-visual,
+.login-panel {
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.login-visual {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: calc(100vh - 56px);
+  padding: 26px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-brand strong,
+.login-brand span {
+  display: block;
+}
+
+.login-brand span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.login-copy {
+  max-width: 560px;
+}
+
+.login-copy h1 {
+  margin: 4px 0 8px;
+  font-size: 38px;
+  letter-spacing: 0;
+}
+
+.login-copy p:last-child,
+.login-panel-head p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.login-panel {
+  align-self: center;
+  padding: 22px;
+}
+
+.login-panel-head {
+  margin-bottom: 18px;
+}
+
+.login-panel-head h2 {
+  margin-bottom: 4px;
+  font-size: 20px;
+}
+
+.login-submit {
+  width: 100%;
+  height: 36px;
+}
+
+@media (max-width: 900px) {
+  .login-page {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .login-visual {
+    min-height: 260px;
+  }
+
+  .login-copy h1 {
+    font-size: 30px;
+  }
+}
