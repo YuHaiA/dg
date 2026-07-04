@@ -1,6 +1,8 @@
 node_modules
 dist
 .env.local
+config.local.json
+data/
 .DS_Store
 .codex/environments/
 .playwright-cli/

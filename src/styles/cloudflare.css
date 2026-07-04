@@ -19,7 +19,12 @@
   overflow: hidden;
 }
 
-.cf-account-panel .el-table {
+.cf-account-select {
+  width: 220px;
+}
+
+.cf-account-panel .el-table,
+.cf-zone-panel .el-table {
   border: 1px solid rgba(35, 54, 86, 0.08);
   width: 100%;
   table-layout: fixed;
@@ -28,18 +33,50 @@
 
 .cf-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 160px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 150px;
   gap: 0 12px;
-}
-
-.cf-form .el-form-item:first-child {
-  grid-column: 1 / -1;
+  align-items: end;
 }
 
 .cf-add-button {
   align-self: end;
   margin-bottom: 18px;
   width: 100%;
+}
+
+.cf-zone-panel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cf-search-input {
+  width: 180px;
+}
+
+.cf-add-domain-input {
+  width: 280px;
+}
+
+.cf-zone-table {
+  --el-table-header-bg-color: rgba(248, 251, 255, 0.9);
+}
+
+.cf-batch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(47, 111, 237, 0.14);
+  border-radius: 8px;
+  background: rgba(47, 111, 237, 0.07);
+}
+
+.cf-batch-bar span {
+  color: #24324a;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .cf-ns-text {
@@ -56,5 +93,11 @@
 
   .cf-add-button {
     margin-bottom: 0;
+  }
+
+  .cf-account-select,
+  .cf-search-input,
+  .cf-add-domain-input {
+    width: 100%;
   }
 }

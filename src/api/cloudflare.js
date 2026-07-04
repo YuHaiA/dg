@@ -1,18 +1,56 @@
-const accountsKey = 'cloudflare_accounts';
-const activeKey = 'cloudflare_active_account';
-const domainAccountKey = 'cloudflare_domain_accounts';
+let cfConfigCache = {
+  accounts: [],
+  activeId: '',
+  domainAccounts: {}
+};
+
+const appBase = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+async function configRequest(path, options = {}) {
+  const response = await fetch(`${appBase}/api/config${path}`, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...(options.body ? { 'Content-Type': 'application/json' } : {})
+    }
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok || payload?.success === false) throw new Error(payload?.error || '配置请求失败');
+  return payload;
+}
+
+function normalizeConfig(data = {}) {
+  cfConfigCache = {
+    accounts: data.accounts || [],
+    activeId: data.activeId || '',
+    domainAccounts: data.domainAccounts || {}
+  };
+  return cfConfigCache;
+}
+
+export async function loadCfConfig() {
+  const result = await configRequest('/status');
+  return normalizeConfig(result?.data?.cloudflare || {});
+}
 
 export function getCfAccounts() {
-  return JSON.parse(window.localStorage.getItem(accountsKey) || '[]');
+  return cfConfigCache.accounts;
 }
 
 export function getActiveCfAccountId() {
-  return window.localStorage.getItem(activeKey) || '';
+  return cfConfigCache.activeId;
 }
 
-export function saveCfAccounts(accounts, activeId) {
-  window.localStorage.setItem(accountsKey, JSON.stringify(accounts));
-  window.localStorage.setItem(activeKey, activeId || accounts[0]?.id || '');
+export async function saveCfAccounts(accounts, activeId) {
+  const result = await configRequest('/cloudflare', {
+    method: 'POST',
+    body: JSON.stringify({
+      accounts,
+      activeId,
+      domainAccounts: cfConfigCache.domainAccounts
+    })
+  });
+  return normalizeConfig(result?.data || {});
 }
 
 export function getActiveCfAccount() {
@@ -30,20 +68,21 @@ export function hasCloudflareNameservers(nameservers) {
 }
 
 export function getCfDomainAccountMap() {
-  return JSON.parse(window.localStorage.getItem(domainAccountKey) || '{}');
+  return cfConfigCache.domainAccounts || {};
 }
 
-export function rememberDomainCfAccount(domain, account = getActiveCfAccount()) {
+export async function rememberDomainCfAccount(domain, account = getActiveCfAccount()) {
   if (!account?.id) return;
-  const map = getCfDomainAccountMap();
-  map[domain] = account.id;
-  window.localStorage.setItem(domainAccountKey, JSON.stringify(map));
+  const map = { ...getCfDomainAccountMap(), [domain]: account.id };
+  cfConfigCache.domainAccounts = map;
+  await saveDomainCfAccount(domain, account.id);
 }
 
-export function forgetDomainCfAccount(domain) {
-  const map = getCfDomainAccountMap();
+export async function forgetDomainCfAccount(domain) {
+  const map = { ...getCfDomainAccountMap() };
   delete map[domain];
-  window.localStorage.setItem(domainAccountKey, JSON.stringify(map));
+  cfConfigCache.domainAccounts = map;
+  await saveDomainCfAccount(domain, '');
 }
 
 export function getDomainCfAccountLabel(domain) {
@@ -69,11 +108,23 @@ function uniqueAccounts(accounts) {
   });
 }
 
+async function saveDomainCfAccount(domain, accountId) {
+  await configRequest('/cloudflare/domain-account', {
+    method: 'POST',
+    body: JSON.stringify({ domain, accountId })
+  });
+}
+
 async function request(path, account, body) {
-  const response = await fetch(`/api/cloudflare${path}`, {
+  const response = await fetch(`${appBase}/api/cloudflare${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...body, api_email: account.email, api_key: account.apiKey })
+    body: JSON.stringify({
+      ...body,
+      ...(account?.id ? { accountId: account.id } : {}),
+      ...(account?.authType ? { auth_type: account.authType } : {}),
+      ...(account?.accountId ? { account_id: account.accountId } : {})
+    })
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok || payload?.success === false) throw new Error(payload?.error || 'Cloudflare request failed');
@@ -81,24 +132,30 @@ async function request(path, account, body) {
 }
 
 export function addCfZone(domain, account = getActiveCfAccount()) {
-  if (!account) throw new Error('请先配置 Cloudflare 账号');
   return request('/zones/add', account, { domains: [domain] });
 }
 
+export function listCfZones(account = getActiveCfAccount()) {
+  return request('/zones/list', account, {});
+}
+
 export function deleteCfZone(domain, account = getActiveCfAccount()) {
-  if (!account) throw new Error('请先配置 Cloudflare 账号');
   return request('/zones/delete', account, { domains: [domain] });
 }
 
 export async function deleteCfZoneSmart(domain) {
   const candidates = getDeleteCandidates(domain);
-  if (!candidates.length) throw new Error('请先配置 Cloudflare 账号');
+  if (!candidates.length) {
+    const result = await deleteCfZone(domain, null);
+    await forgetDomainCfAccount(domain);
+    return result;
+  }
 
   const errors = [];
   for (const account of candidates) {
     try {
       const result = await deleteCfZone(domain, account);
-      forgetDomainCfAccount(domain);
+      await forgetDomainCfAccount(domain);
       return result;
     } catch (error) {
       errors.push(`${account.email}: ${error.message}`);
@@ -109,6 +166,5 @@ export async function deleteCfZoneSmart(domain) {
 }
 
 export function lookupCfZone(domain, account) {
-  if (!account) throw new Error('请先配置 Cloudflare 账号');
   return request('/zones/lookup', account, { domains: [domain] });
 }

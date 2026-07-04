@@ -1,23 +1,23 @@
-const baseUrl = '/api/digitalplat';
-const apiKeyStorageKey = 'digitalplat_api_key';
+const appBase = import.meta.env.BASE_URL.replace(/\/$/, '');
+const baseUrl = `${appBase}/api/digitalplat`;
+const configBaseUrl = `${appBase}/api/config`;
 
 export function getStoredApiKey() {
-  return window.localStorage.getItem(apiKeyStorageKey) || '';
+  return '';
 }
 
-export function setStoredApiKey(value) {
-  const apiKey = value.trim();
-  if (apiKey) window.localStorage.setItem(apiKeyStorageKey, apiKey);
-  else window.localStorage.removeItem(apiKeyStorageKey);
+export async function setStoredApiKey(value) {
+  return configRequest('/digitalplat', {
+    method: 'POST',
+    body: JSON.stringify({ apiKey: value.trim() })
+  });
 }
 
 async function request(path, options = {}) {
-  const apiKey = getStoredApiKey();
   const response = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       ...(options.headers || {}),
-      ...(apiKey ? { 'X-DigitalPlat-Api-Key': apiKey } : {}),
       ...(options.body ? { 'Content-Type': 'application/json' } : {})
     }
   });
@@ -28,6 +28,19 @@ async function request(path, options = {}) {
     throw new Error(message);
   }
 
+  return payload;
+}
+
+async function configRequest(path, options = {}) {
+  const response = await fetch(`${configBaseUrl}${path}`, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...(options.body ? { 'Content-Type': 'application/json' } : {})
+    }
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok || payload?.success === false) throw new Error(payload?.error || '配置保存失败');
   return payload;
 }
 
@@ -68,5 +81,5 @@ export function deleteDomain(domain) {
 }
 
 export function getApiStatus() {
-  return Promise.resolve({ success: true, data: { apiConfigured: Boolean(getStoredApiKey()) }, meta: {} });
+  return request('/status');
 }

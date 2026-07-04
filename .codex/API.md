@@ -224,10 +224,10 @@ curl https://domain-api.digitalplat.org/api/v1/domains/example.us.kg \
 
 ## Frontend Development Notes
 
-- 真实 API Key 不得写入前端 bundle；当前开发版允许用户在前端填写，并保存到浏览器 `localStorage`。
-- 本地 Vite 代理从请求头 `X-DigitalPlat-Api-Key` 读取 API Key，再转发给 DigitalPlat 上游。
-- Cloudflare 集成使用本地 Vite 代理 `/api/cloudflare/zones/add`、`/api/cloudflare/zones/delete` 转发到 Cloudflare v4 API。
-- Cloudflare 账号支持多个，当前开发版保存到浏览器 `localStorage`，请求时使用默认账号的邮箱与 Global API Key。
+- 真实 API Key 不得写入前端 bundle；当前开发版将凭证保存到本地 `config.local.json`，该文件必须保持在 `.gitignore` 中。
+- 前端页面可写入 DigitalPlat API Key；本地 Vite 代理从 `config.local.json` 读取 API Key 并转发给 DigitalPlat 上游。
+- Cloudflare 集成使用本地 Vite 代理 `/api/cloudflare/zones/add`、`/api/cloudflare/zones/delete`、`/api/cloudflare/zones/lookup` 转发到 Cloudflare v4 API。
+- Cloudflare 账号由页面写入 `config.local.json`，支持多个账号和默认账号；支持 API Token 与 Global API Key 两种认证，前端请求只传账号 ID，密钥不进入浏览器存储。
 - 前端表单应限制 `slot_type` 为 `free`、`paid`、`subscription` 三选一。
 - `nameservers` 应以数组提交，并在送出前去除空白项。
 - 删除域名是高风险操作，UI 必须有二次确认与明确后果提示。

@@ -23,10 +23,13 @@ function parseError(error) {
 }
 
 function randomPrefix() {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  const chars = `${letters}${digits}`;
   const length = 5 + Math.floor(Math.random() * 4);
-  let value = '';
-  for (let index = 0; index < length; index += 1) {
+  const firstPool = Math.random() < 0.7 ? digits : letters;
+  let value = firstPool[Math.floor(Math.random() * firstPool.length)];
+  for (let index = 1; index < length; index += 1) {
     value += chars[Math.floor(Math.random() * chars.length)];
   }
   return value;
@@ -44,9 +47,9 @@ export function useDomainConsole() {
   }
 
   async function saveApiKey(value) {
-    setStoredApiKey(value);
-    apiKey.value = getStoredApiKey();
-    apiReady.value = Boolean(apiKey.value);
+    const result = await setStoredApiKey(value);
+    apiKey.value = '';
+    apiReady.value = Boolean(result?.data?.apiConfigured);
     if (apiReady.value) await loadDomains();
     else domains.value = [];
   }

@@ -26,7 +26,7 @@ export function useCloudflareBatch({ loadDomains, updateNameserversByName }) {
         if (!shouldLookup(row)) continue;
         const account = await findDomainAccount(row.name, accounts);
         if (account) {
-          rememberDomainCfAccount(row.name, account);
+          await rememberDomainCfAccount(row.name, account);
           synced += 1;
         }
       }
@@ -91,7 +91,7 @@ export function useCloudflareBatch({ loadDomains, updateNameserversByName }) {
       const nameservers = result?.data?.[0]?.name_servers || [];
       if (!nameservers.length) throw new Error('Cloudflare 未返回 NS');
       await updateNameserversByName(domain, nameservers);
-      rememberDomainCfAccount(domain);
+      await rememberDomainCfAccount(domain);
       return true;
     } catch (error) {
       return false;

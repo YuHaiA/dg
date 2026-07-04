@@ -10,55 +10,84 @@
       </div>
       <div class="login-copy">
         <p class="eyebrow">Console Access</p>
-        <h1>登录控制台</h1>
-        <p>填写 DigitalPlat API Key 后进入域名管理、批量注册与 CF 托管工作台。</p>
+        <h1>{{ pageTitle }}</h1>
+        <p>{{ pageCopy }}</p>
       </div>
     </section>
 
     <section class="login-panel">
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
         <div class="login-panel-head">
-          <h2>API 登录</h2>
-          <p>Key 只保存在当前浏览器本地。</p>
+          <h2>{{ panelTitle }}</h2>
+          <p>登录状态使用本地 Cookie 保存。</p>
         </div>
 
-        <el-form-item label="DigitalPlat API Key" prop="apiKey">
-          <el-input v-model="form.apiKey" show-password clearable placeholder="dp_live_..." />
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="form.username" clearable placeholder="admin" />
         </el-form-item>
 
-        <el-button type="primary" class="login-submit" :loading="loading" @click="submit">进入控制台</el-button>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="form.password" show-password clearable placeholder="至少 6 位" />
+        </el-form-item>
+
+        <el-button type="primary" class="login-submit" :loading="loading" @click="submit">
+          {{ isRegisterMode ? '注册并进入' : '进入控制台' }}
+        </el-button>
+        <el-button v-if="initialized" class="login-switch" link type="primary" @click="toggleMode">
+          {{ isRegisterMode ? '已有账号，去登录' : '没有账号，注册一个' }}
+        </el-button>
       </el-form>
     </section>
   </main>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
-defineProps({
+const props = defineProps({
+  initialized: { type: Boolean, default: false },
   loading: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['submit']);
 const formRef = ref();
-const form = reactive({ apiKey: '' });
+const mode = ref('login');
+const form = reactive({ username: '', password: '' });
+
+const isRegisterMode = computed(() => !props.initialized || mode.value === 'register');
+const pageTitle = computed(() => (isRegisterMode.value ? '注册控制台账号' : '登录控制台'));
+const pageCopy = computed(() =>
+  isRegisterMode.value ? '注册后会拥有独立保存的 API 与 Cloudflare 配置。' : '登录后读取当前账号保存的 API 与 Cloudflare 配置。'
+);
+const panelTitle = computed(() => (isRegisterMode.value ? '账号注册' : '账号登录'));
 
 const rules = {
-  apiKey: [
-    { required: true, message: '请输入 API Key', trigger: 'blur' },
-    { validator: validateApiKey, trigger: 'blur' }
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码至少 6 位', trigger: 'blur' }
   ]
 };
-
-function validateApiKey(rule, value, callback) {
-  const text = value.trim();
-  if (text.startsWith('dp_live_') || text.startsWith('dp_test_')) callback();
-  else callback(new Error('API Key 应以 dp_live_ 或 dp_test_ 开头'));
-}
 
 async function submit() {
   if (!formRef.value) return;
   await formRef.value.validate();
-  emit('submit', form.apiKey.trim());
+  emit('submit', {
+    register: isRegisterMode.value,
+    username: form.username.trim(),
+    password: form.password
+  });
 }
+
+function toggleMode() {
+  mode.value = isRegisterMode.value ? 'login' : 'register';
+}
+
+watch(
+  () => props.initialized,
+  (initialized) => {
+    mode.value = initialized ? 'login' : 'register';
+  },
+  { immediate: true }
+);
 </script>

@@ -8,7 +8,7 @@
 
 - 已建立 Vue 3 + Vite + Element Plus 前端应用。
 - 已新增 API 参考文件，作为后续开发域名管理网站、前端页面或后端代理服务的依据。
-- API Key 由前端页面填写并保存到浏览器 `localStorage`，开发环境通过 Vite 本地代理 `/api/digitalplat/*` 调用上游 API。
+- API Key 保存到本地 `config.local.json`，可由前端页面写入；开发环境通过 Vite 本地代理 `/api/digitalplat/*` 调用上游 API。
 - 域名总览支持列表、搜索、固定高度内部滚动、分页、更新名称服务器和删除确认。
 - 注册域名已拆分为独立页面。
 
@@ -70,13 +70,13 @@
 
 - 真实 API Key 不得硬编码到源码。
 - 若网站会在浏览器中公开执行，必须通过后端代理或其他服务端安全环境调用 DigitalPlat Domains API。
-- 目前 Vite dev server 已提供 `/api/digitalplat/*` 本地代理，从请求头 `X-DigitalPlat-Api-Key` 读取 API Key 并注入上游请求。
+- 目前 Vite dev server 已提供 `/api/digitalplat/*` 本地代理，从 `config.local.json` 读取 API Key 并注入上游请求。
 - DigitalPlat 上游会对部分非浏览器请求触发安全检查；本地代理会转发浏览器 `User-Agent`、`Accept-Language`，并设置 `Accept: application/json`。
 - 实测上游列表数据字段包含 `domain`、`expires_at`；前端 API client 会规范化为页面使用的 `name`、`expiry_date`。
-- `.env.local` 不再是 API Key 配置入口；如后续只配置 API Base URL，仍不应提交到版本库。
+- `config.local.json` 可作为本地开发的凭证配置入口，但必须保持在 `.gitignore` 中，不得提交真实凭证。
 - 删除域名会进入 `pendingdelete` 且 DNS 立即停用，因此 UI 必须加入二次确认。
 - 对外请求与敏感配置应集中在 API client 或服务端代理模块，不应散落在 UI 组件内。
-- Cloudflare 多账号信息当前保存到浏览器 `localStorage`，仅用于本地开发页面；生产环境应迁移到后端安全存储。
+- Cloudflare 多账号凭证保存到 `config.local.json`，可由前端页面添加、删除和切换默认账号；支持 API Token 与 Global API Key 两种认证。生产环境应迁移到后端安全存储。
 
 ## Change Log
 

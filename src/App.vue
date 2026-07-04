@@ -1,6 +1,9 @@
 <template>
   <el-config-provider size="small">
-    <LoginPage v-if="!apiReady" :loading="loading" @submit="loginWithApiKey" />
+    <div v-if="!authChecked" class="boot-screen">
+      <el-icon class="is-loading"><RefreshCw /></el-icon>
+    </div>
+    <LoginPage v-else-if="!authenticated" :initialized="authInitialized" :loading="authLoading" @submit="submitAuth" />
 
     <el-container v-else class="app-shell">
       <el-container>
@@ -88,6 +91,7 @@
             {{ apiReady ? '已连接' : '未配置' }}
           </el-tag>
         </div>
+        <el-button class="logout-button" plain @click="logout">退出登录</el-button>
       </div>
     </el-drawer>
 
@@ -143,7 +147,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ArrowLeft, Cloud, LayoutDashboard, Menu, RefreshCw, SquarePlus } from 'lucide-vue-next';
-import { addCfZone, deleteCfZoneSmart, rememberDomainCfAccount } from './api/cloudflare';
+import { getAuthStatus, loginUser, logoutUser, registerUser } from './api/auth';
+import { addCfZone, deleteCfZoneSmart, loadCfConfig, rememberDomainCfAccount } from './api/cloudflare';
 import { useCloudflareBatch } from './composables/useCloudflareBatch';
 import { useDomainDeleteActions } from './composables/useDomainDeleteActions';
 import { useDomainConsole } from './composables/useDomainConsole';
@@ -156,6 +161,10 @@ import { copyText } from './utils/clipboard';
 import { formatDomainList } from './utils/domainList';
 
 const activePage = ref('domains');
+const authenticated = ref(false);
+const authInitialized = ref(false);
+const authChecked = ref(false);
+const authLoading = ref(true);
 const navOpen = ref(false);
 const pageTitle = computed(() => {
   const titles = { domains: '域名总览', register: '注册域名', cloudflare: 'Cloudflare' };
@@ -224,16 +233,54 @@ async function submitApiKey() {
   ElMessage.success(apiReady.value ? 'API Key 已保存' : 'API Key 已清除');
 }
 
-async function loginWithApiKey(value) {
-  await saveApiKey(value);
-  if (apiReady.value) ElMessage.success('登录成功');
+async function loadAuthStatus() {
+  authLoading.value = true;
+  try {
+    const result = await getAuthStatus();
+    authInitialized.value = Boolean(result?.data?.initialized);
+    authenticated.value = Boolean(result?.data?.authenticated);
+  } catch (error) {
+    authenticated.value = false;
+  } finally {
+    authChecked.value = true;
+    authLoading.value = false;
+  }
+}
+
+async function submitAuth(payload) {
+  authLoading.value = true;
+  try {
+    if (payload.register) await registerUser(payload);
+    else await loginUser(payload);
+    await loadAuthStatus();
+    await loadAfterAuth();
+    ElMessage.success(payload.register ? '账号已创建' : '登录成功');
+  } catch (error) {
+    ElMessage.error(error.message || '登录失败');
+  } finally {
+    authLoading.value = false;
+  }
+}
+
+async function logout() {
+  await logoutUser();
+  authenticated.value = false;
+  domains.value = [];
+  activePage.value = 'domains';
+  navOpen.value = false;
+}
+
+async function loadAfterAuth() {
+  await loadCfConfig();
+  await loadApiStatus();
+  await loadDomains();
 }
 
 async function hostRegisteredDomain(payload) {
   const result = await addCfZone(payload.domain);
   const nameservers = result?.data?.[0]?.name_servers || [];
   if (!nameservers.length) throw new Error('Cloudflare 未返回 NS');
-  rememberDomainCfAccount(payload.domain);
+  await rememberDomainCfAccount(payload.domain);
   return nameservers;
 }
 
@@ -286,7 +333,7 @@ async function copySelectedDomains(rows) {
 }
 
 onMounted(async () => {
-  await loadApiStatus();
-  await loadDomains();
+  await loadAuthStatus();
+  if (authenticated.value) await loadAfterAuth();
 });
 </script>

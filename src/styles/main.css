@@ -44,6 +44,14 @@ p {
   min-height: 100vh;
 }
 
+.boot-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-size: 28px;
+}
+
 .brand,
 .sidebar-status {
   display: flex;
@@ -143,6 +151,11 @@ p {
   padding: 10px 12px;
   border-radius: 12px;
   background: rgba(47, 111, 237, 0.08);
+}
+
+.logout-button {
+  margin: 10px 8px 0;
+  width: calc(100% - 16px);
 }
 
 .topbar {

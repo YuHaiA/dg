@@ -1,0 +1,18 @@
+{
+  "digitalplat": {
+    "apiKey": "dp_live_xxxxxxxxxxxxxxxxx"
+  },
+  "cloudflare": {
+    "activeId": "cf_main",
+    "accounts": [
+      {
+        "id": "cf_main",
+        "name": "main token",
+        "email": "",
+        "authType": "token",
+        "apiKey": "cfut_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    ],
+    "domainAccounts": {}
+  }
+}
