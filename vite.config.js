@@ -47,6 +47,8 @@ function resolveCurlPath() {
 }
 
 const curlPath = resolveCurlPath();
+const upstreamUserAgent =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
 const emptyLocalConfig = {
   digitalplat: { apiKey: '' },
@@ -187,6 +189,7 @@ async function proxyWithCurl({ apiKey, body, method, url }) {
   if (!curlPath) throw new Error('curl is not installed on this server');
   const args = [
     '-sS',
+    '--http1.1',
     '-w',
     '\n%{http_code}',
     '-X',
@@ -194,7 +197,17 @@ async function proxyWithCurl({ apiKey, body, method, url }) {
     '-H',
     `Authorization: Bearer ${apiKey}`,
     '-H',
-    'Accept: application/json'
+    'Accept: application/json',
+    '-H',
+    'Accept-Language: zh-CN,zh;q=0.9,en;q=0.8',
+    '-H',
+    `User-Agent: ${upstreamUserAgent}`,
+    '-H',
+    'Sec-Fetch-Site: same-origin',
+    '-H',
+    'Sec-Fetch-Mode: cors',
+    '-H',
+    'Sec-Fetch-Dest: empty'
   ];
   if (body) {
     args.push('-H', 'Content-Type: application/json', '--data-binary', '@-');
@@ -226,8 +239,15 @@ function runCurl(args, body) {
 
 async function proxyWithPowerShell({ apiKey, body, method, url }) {
   const script = `
-$headers = @{ Authorization = "Bearer $env:DIGITALPLAT_PROXY_KEY"; Accept = "application/json" }
-$params = @{ Uri = $env:DIGITALPLAT_PROXY_URL; Method = $env:DIGITALPLAT_PROXY_METHOD; Headers = $headers; UseBasicParsing = $true; ErrorAction = "Stop" }
+$headers = @{
+  Authorization = "Bearer $env:DIGITALPLAT_PROXY_KEY"
+  Accept = "application/json"
+  "Accept-Language" = "zh-CN,zh;q=0.9,en;q=0.8"
+  "Sec-Fetch-Site" = "same-origin"
+  "Sec-Fetch-Mode" = "cors"
+  "Sec-Fetch-Dest" = "empty"
+}
+$params = @{ Uri = $env:DIGITALPLAT_PROXY_URL; Method = $env:DIGITALPLAT_PROXY_METHOD; Headers = $headers; UserAgent = $env:DIGITALPLAT_PROXY_UA; UseBasicParsing = $true; ErrorAction = "Stop" }
 if ($env:DIGITALPLAT_PROXY_BODY) {
   $params.Body = $env:DIGITALPLAT_PROXY_BODY
   $params.ContentType = "application/json"
@@ -249,7 +269,8 @@ try {
       DIGITALPLAT_PROXY_BODY: body ? body.toString('utf8') : '',
       DIGITALPLAT_PROXY_KEY: apiKey,
       DIGITALPLAT_PROXY_METHOD: method,
-      DIGITALPLAT_PROXY_URL: url
+      DIGITALPLAT_PROXY_URL: url,
+      DIGITALPLAT_PROXY_UA: upstreamUserAgent
     },
     windowsHide: true
   });
