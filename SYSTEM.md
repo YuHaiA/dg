@@ -78,6 +78,19 @@
 - 对外请求与敏感配置应集中在 API client 或服务端代理模块，不应散落在 UI 组件内。
 - Cloudflare 多账号凭证保存到 `config.local.json`，可由前端页面添加、删除和切换默认账号；支持 API Token 与 Global API Key 两种认证。生产环境应迁移到后端安全存储。
 
+## Server 1 Deployment
+
+- 入口：`https://mycodexy.duckdns.org/dg/`。
+- SSH：`ubuntu@mycodexy.duckdns.org`，当前本机 key 位于 `C:\Users\yu\Desktop\file\sub2.pem`。
+- 远端目录：`/opt/dg-console`。
+- systemd：`dg-console.service`，绑定 `127.0.0.1:5173`。
+- Nginx：`/dg/` 反代到 `127.0.0.1:5173`，`/dg/api/` 反代到 `127.0.0.1:5173/api/`。
+- 运行形态：轻量源码部署，当前仍使用 Vite dev server 提供前端与本地 API 中间件；不使用 Docker。
+- 运行数据：`/opt/dg-console/data/users.json`，同步代码时必须保留远端 `data/`。
+- 备份目录：`/home/ubuntu/dg-console-backups/`。
+- 同步方式：本地 `git archive` 打包当前代码，上传 `/tmp/dg-console.tar.gz`；远端备份 `/opt/dg-console`，保留 `data/`，解压覆盖源码，执行 `npm install`、`npm run build`，再 `sudo systemctl restart dg-console.service`。
+- 注意：不要使用 `npm install --omit=optional`，Rollup 在 Linux 下需要 optional native package（例如 `@rollup/rollup-linux-x64-gnu`）。
+
 ## Change Log
 
 ### 2026-06-01
