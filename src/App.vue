@@ -312,6 +312,7 @@ async function confirmDeleteCf(row) {
     });
     await deleteCfZoneSmart(row.name);
     ElMessage.success('Cloudflare 托管已删除');
+    await loadDomains();
   } catch (error) {
     if (error !== 'cancel' && error !== 'close') ElMessage.error(error.message || '删除 CF 托管失败');
   }

@@ -87,7 +87,7 @@
         </el-table-column>
         <el-table-column label="CF 状态">
           <template #default="{ row }">
-            <el-tag :type="hasCloudflareNameservers(row.nameservers) ? 'success' : 'info'" effect="light" round>
+            <el-tag :type="cfStatusType(row)" effect="light" round>
               {{ cfStatusText(row) }}
             </el-tag>
           </template>
@@ -177,8 +177,9 @@ const cfFilterOptions = computed(() => {
   const accounts = [...new Set(props.domains.map((item) => getDomainCfAccountLabel(item.name)).filter(Boolean))];
   return [
     { label: '全部 CF', value: 'all' },
-    { label: '未接入', value: 'unconnected' },
-    { label: '已接入', value: 'connected' },
+    { label: '未托管', value: 'unconnected' },
+    { label: '已托管', value: 'connected' },
+    { label: '仅 NS 指向 CF', value: 'ns-only' },
     { label: '已识别账号', value: 'known' },
     ...accounts.map((item) => ({ label: item, value: `account:${item}` }))
   ];
@@ -213,8 +214,16 @@ function formatNameservers(list) {
 }
 
 function cfStatusText(row) {
-  if (!hasCloudflareNameservers(row.nameservers)) return '未接入';
-  return getDomainCfAccountLabel(row.name) || '已接入';
+  const account = getDomainCfAccountLabel(row.name);
+  if (account) return account;
+  if (hasCloudflareNameservers(row.nameservers)) return '仅 NS 指向 CF';
+  return '未托管';
+}
+
+function cfStatusType(row) {
+  if (getDomainCfAccountLabel(row.name)) return 'success';
+  if (hasCloudflareNameservers(row.nameservers)) return 'warning';
+  return 'info';
 }
 
 function matchesKeyword(item, value) {
@@ -223,10 +232,11 @@ function matchesKeyword(item, value) {
 }
 
 function matchesCfFilter(item) {
-  const connected = hasCloudflareNameservers(item.nameservers);
+  const nsCloudflare = hasCloudflareNameservers(item.nameservers);
   const account = getDomainCfAccountLabel(item.name);
-  if (cfFilter.value === 'unconnected') return !connected;
-  if (cfFilter.value === 'connected') return connected;
+  if (cfFilter.value === 'unconnected') return !account;
+  if (cfFilter.value === 'connected') return Boolean(account);
+  if (cfFilter.value === 'ns-only') return nsCloudflare && !account;
   if (cfFilter.value === 'known') return Boolean(account);
   if (cfFilter.value.startsWith('account:')) return account === cfFilter.value.replace('account:', '');
   return true;

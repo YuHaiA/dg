@@ -30,6 +30,7 @@ export function useCloudflareBatch({ loadDomains, updateNameserversByName }) {
           synced += 1;
         }
       }
+      await loadDomains();
       ElMessage.success(`已同步 ${synced} 个 CF 状态`);
     } finally {
       cfBatching.value = false;
@@ -131,6 +132,7 @@ export function useCloudflareBatch({ loadDomains, updateNameserversByName }) {
           failed.push(`${row.name}（${error.message}）`);
         }
       }
+      await loadDomains();
       if (failed.length) ElMessage.warning(`部分删除失败：${failed.join(', ')}`);
       else ElMessage.success(`已删除 ${rows.length} 个 CF 托管`);
     } finally {
